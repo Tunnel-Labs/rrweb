@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import { parse } from '@-rrweb/css-parse';
+import { parse } from '@-/css-parse';
 import {
 	BuildCache,
 	elementNode,

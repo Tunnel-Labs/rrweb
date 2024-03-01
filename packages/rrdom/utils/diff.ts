@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import type {
 	canvasEventWithTime,
 	canvasMutationData,
@@ -19,7 +21,7 @@ import type {
 	RRIFrameElement,
 	RRMediaElement,
 	RRStyleElement,
-} from '../exports/main';
+} from '../exports/main.js';
 import type {
 	IRRCDATASection,
 	IRRComment,
@@ -27,7 +29,7 @@ import type {
 	IRRElement,
 	IRRNode,
 	IRRText,
-} from './document';
+} from './document.js';
 
 const NAMESPACES: Record<string, string> = {
 	svg: 'http://www.w3.org/2000/svg',

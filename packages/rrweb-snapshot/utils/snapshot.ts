@@ -15,10 +15,7 @@ import {
 	serializedNodeWithId,
 	SlimDOMOptions,
 } from '../types/_.js';
-import {
-	htmlImageElementToThumbhash,
-	htmlImageElementToThumbhashDataUrl,
-} from './thumbhash.ts';
+import { htmlImageElementToThumbhashDataUrl } from './thumbhash.js';
 import {
 	extractFileExtension,
 	getInputType,
@@ -590,8 +587,70 @@ function serializeTextNode(
 	};
 }
 
+function serializeImageElementNode(
+	image: HTMLImageElement,
+	options: {
+		doc: Document;
+		inlineImages: false | {
+			localOnly: boolean;
+			useThumbhash: boolean;
+		};
+		attributes: attributes;
+	},
+) {
+	const { doc, attributes } = options;
+	if (!options.inlineImages) return;
+	const { localOnly, useThumbhash } = options.inlineImages;
+
+	if (localOnly) {
+		const imageSrcUrl = new URL(image.src, window.location.origin);
+		// Skip inlining the image if it's not from a local URL
+		if (
+			imageSrcUrl.hostname.includes('localhost') ||
+			imageSrcUrl.hostname.endsWith('.test')
+		) {
+			return;
+		}
+	}
+
+	if (useThumbhash) {
+		htmlImageElementToThumbhashDataUrl(image).then((dataUrl) => {
+			attributes.rr_dataURL = dataUrl;
+		});
+	} else {
+		if (!canvasService) {
+			canvasService = doc.createElement('canvas');
+			canvasCtx = canvasService.getContext('2d');
+		}
+		const oldValue = image.crossOrigin;
+		image.crossOrigin = 'anonymous';
+		const recordInlineImage = () => {
+			image.removeEventListener('load', recordInlineImage);
+			try {
+				canvasService!.width = image.naturalWidth;
+				canvasService!.height = image.naturalHeight;
+				canvasCtx!.drawImage(image, 0, 0);
+				attributes.rr_dataURL = canvasService!.toDataURL(
+					dataURLOptions.type,
+					dataURLOptions.quality,
+				);
+			} catch (err) {
+				console.warn(
+					`Cannot inline img src=${image.currentSrc}! Error: ${err as string}`,
+				);
+			}
+			oldValue ?
+				(attributes.crossOrigin = oldValue) :
+				image.removeAttribute('crossorigin');
+		};
+		// The image content may not have finished loading yet.
+		if (image.complete && image.naturalWidth !== 0) recordInlineImage();
+		else image.addEventListener('load', recordInlineImage);
+	}
+}
+
 function serializeElementNode(
-	htmlElement: HTMLElement,
+	element: HTMLElement,
 	options: {
 		doc: Document;
 		blockClass: string | RegExp;
@@ -600,7 +659,10 @@ function serializeElementNode(
 		maskInputOptions: MaskInputOptions;
 		maskInputFn: MaskInputFn | undefined;
 		dataURLOptions?: DataURLOptions;
-		inlineImages: boolean | { thumbhash: true };
+		inlineImages: boolean | {
+			localOnly: boolean;
+			useThumbhash: boolean;
+		};
 		recordCanvas: boolean;
 		keepIframeSrcFn: KeepIframeSrcFn;
 		/**
@@ -624,12 +686,12 @@ function serializeElementNode(
 		newlyAddedElement = false,
 		rootId,
 	} = options;
-	const needBlock = _isBlockedElement(htmlElement, blockClass, blockSelector);
-	const tagName = getValidTagName(htmlElement);
+	const needBlock = _isBlockedElement(element, blockClass, blockSelector);
+	const tagName = getValidTagName(element);
 	let attributes: attributes = {};
-	const len = htmlElement.attributes.length;
+	const len = element.attributes.length;
 	for (let i = 0; i < len; i++) {
-		const attr = htmlElement.attributes[i];
+		const attr = element.attributes[i];
 		if (!ignoreAttribute(tagName, attr.name, attr.value)) {
 			attributes[attr.name] = transformAttribute(
 				doc,
@@ -639,10 +701,11 @@ function serializeElementNode(
 			);
 		}
 	}
+
 	// remote css
 	if (tagName === 'link' && inlineStylesheet) {
 		const stylesheet = Array.from(doc.styleSheets).find((s) => {
-			return s.href === (htmlElement as HTMLLinkElement).href;
+			return s.href === (element as HTMLLinkElement).href;
 		});
 		let cssText: string | null = null;
 		if (stylesheet) {
@@ -657,12 +720,12 @@ function serializeElementNode(
 	// dynamic stylesheet
 	if (
 		tagName === 'style' &&
-		(htmlElement as HTMLStyleElement).sheet &&
+		(element as HTMLStyleElement).sheet &&
 		// TODO: Currently we only try to get dynamic stylesheet when it is an empty style element
-		!(htmlElement.innerText || htmlElement.textContent || '').trim().length
+		!(element.innerText || element.textContent || '').trim().length
 	) {
 		const cssText = stringifyStylesheet(
-			(htmlElement as HTMLStyleElement).sheet as CSSStyleSheet,
+			(element as HTMLStyleElement).sheet as CSSStyleSheet,
 		);
 		if (cssText) {
 			attributes._cssText = absoluteToStylesheet(cssText, getHref());
@@ -670,8 +733,8 @@ function serializeElementNode(
 	}
 	// form fields
 	if (tagName === 'input' || tagName === 'textarea' || tagName === 'select') {
-		const value = (htmlElement as HTMLInputElement | HTMLTextAreaElement).value;
-		const checked = (htmlElement as HTMLInputElement).checked;
+		const value = (element as HTMLInputElement | HTMLTextAreaElement).value;
+		const checked = (element as HTMLInputElement).checked;
 		if (
 			attributes.type !== 'radio' &&
 			attributes.type !== 'checkbox' &&
@@ -680,8 +743,8 @@ function serializeElementNode(
 			value
 		) {
 			attributes.value = maskInputValue({
-				element: htmlElement,
-				type: getInputType(htmlElement),
+				element: element,
+				type: getInputType(element),
 				tagName,
 				value,
 				maskInputOptions,
@@ -693,7 +756,7 @@ function serializeElementNode(
 	}
 	if (tagName === 'option') {
 		if (
-			(htmlElement as HTMLOptionElement).selected && !maskInputOptions['select']
+			(element as HTMLOptionElement).selected && !maskInputOptions['select']
 		) {
 			attributes.selected = true;
 		} else {
@@ -704,25 +767,25 @@ function serializeElementNode(
 	}
 	// canvas image data
 	if (tagName === 'canvas' && recordCanvas) {
-		if ((htmlElement as ICanvas).__context === '2d') {
+		if ((element as ICanvas).__context === '2d') {
 			// only record this on 2d canvas
-			if (!is2DCanvasBlank(htmlElement as HTMLCanvasElement)) {
-				attributes.rr_dataURL = (htmlElement as HTMLCanvasElement).toDataURL(
+			if (!is2DCanvasBlank(element as HTMLCanvasElement)) {
+				attributes.rr_dataURL = (element as HTMLCanvasElement).toDataURL(
 					dataURLOptions.type,
 					dataURLOptions.quality,
 				);
 			}
-		} else if (!('__context' in htmlElement)) {
+		} else if (!('__context' in element)) {
 			// context is unknown, better not call getContext to trigger it
-			const canvasDataURL = (htmlElement as HTMLCanvasElement).toDataURL(
+			const canvasDataURL = (element as HTMLCanvasElement).toDataURL(
 				dataURLOptions.type,
 				dataURLOptions.quality,
 			);
 
 			// create blank canvas of same dimensions
 			const blankCanvas = document.createElement('canvas');
-			blankCanvas.width = (htmlElement as HTMLCanvasElement).width;
-			blankCanvas.height = (htmlElement as HTMLCanvasElement).height;
+			blankCanvas.width = (element as HTMLCanvasElement).width;
+			blankCanvas.height = (element as HTMLCanvasElement).height;
 			const blankCanvasDataURL = blankCanvas.toDataURL(
 				dataURLOptions.type,
 				dataURLOptions.quality,
@@ -735,50 +798,19 @@ function serializeElementNode(
 		}
 	}
 	// save image offline
-	if (tagName === 'img' && inlineImages) {
-		if (typeof inlineImages === 'object' && inlineImages.thumbhash) {
-			htmlImageElementToThumbhashDataUrl(htmlElement).then((dataUrl) => {
-				attributes.rr_dataURL = dataUrl;
-			});
-		} else if (inlineImages === true) {
-			if (!canvasService) {
-				canvasService = doc.createElement('canvas');
-				canvasCtx = canvasService.getContext('2d');
-			}
-			const image = htmlElement as HTMLImageElement;
-			const oldValue = image.crossOrigin;
-			image.crossOrigin = 'anonymous';
-			const recordInlineImage = () => {
-				image.removeEventListener('load', recordInlineImage);
-				try {
-					canvasService!.width = image.naturalWidth;
-					canvasService!.height = image.naturalHeight;
-					canvasCtx!.drawImage(image, 0, 0);
-					attributes.rr_dataURL = canvasService!.toDataURL(
-						dataURLOptions.type,
-						dataURLOptions.quality,
-					);
-				} catch (err) {
-					console.warn(
-						`Cannot inline img src=${image.currentSrc}! Error: ${err as string}`,
-					);
-				}
-				oldValue ?
-					(attributes.crossOrigin = oldValue) :
-					image.removeAttribute('crossorigin');
-			};
-			// The image content may not have finished loading yet.
-			if (image.complete && image.naturalWidth !== 0) recordInlineImage();
-			else image.addEventListener('load', recordInlineImage);
-		}
+	if (tagName === 'img') {
+		serializeImageElementNode(element as HTMLImageElement, {
+			attributes,
+			doc,
+			inlineImages,
+		});
 	}
 	// media elements
 	if (tagName === 'audio' || tagName === 'video') {
-		attributes.rr_mediaState = (htmlElement as HTMLMediaElement).paused ?
+		attributes.rr_mediaState = (element as HTMLMediaElement).paused ?
 			'paused' :
 			'played';
-		attributes.rr_mediaCurrentTime =
-			(htmlElement as HTMLMediaElement).currentTime;
+		attributes.rr_mediaCurrentTime = (element as HTMLMediaElement).currentTime;
 	}
 	// Scroll
 	if (!newlyAddedElement) {
@@ -786,16 +818,16 @@ function serializeElementNode(
 		// Since `scrollTop` & `scrollLeft` are always 0 when an element is added to the DOM.
 		// And scrolls also get picked up by rrweb's ScrollObserver
 		// So we can safely skip the `scrollTop/Left` calls for newly added elements
-		if (htmlElement.scrollLeft) {
-			attributes.rr_scrollLeft = htmlElement.scrollLeft;
+		if (element.scrollLeft) {
+			attributes.rr_scrollLeft = element.scrollLeft;
 		}
-		if (htmlElement.scrollTop) {
-			attributes.rr_scrollTop = htmlElement.scrollTop;
+		if (element.scrollTop) {
+			attributes.rr_scrollTop = element.scrollTop;
 		}
 	}
 	// block element
 	if (needBlock) {
-		const { width, height } = htmlElement.getBoundingClientRect();
+		const { width, height } = element.getBoundingClientRect();
 		attributes = {
 			class: attributes.class,
 			rr_width: `${width}px`,
@@ -804,7 +836,7 @@ function serializeElementNode(
 	}
 	// iframe
 	if (tagName === 'iframe' && !keepIframeSrcFn(attributes.src as string)) {
-		if (!(htmlElement as HTMLIFrameElement).contentDocument) {
+		if (!(element as HTMLIFrameElement).contentDocument) {
 			// we can't record it directly as we can't see into it
 			// preserve the src attribute so a decision can be taken at replay time
 			attributes.rr_src = attributes.src;
@@ -824,7 +856,7 @@ function serializeElementNode(
 		tagName,
 		attributes,
 		childNodes: [],
-		isSVG: isSVGElement(htmlElement as Element) || undefined,
+		isSVG: isSVGElement(element as Element) || undefined,
 		needBlock,
 		rootId,
 		isCustom: isCustomElement,
@@ -1275,6 +1307,7 @@ function snapshot(
 		keepIframeSrcFn?: KeepIframeSrcFn;
 	},
 ): serializedNodeWithId | null {
+	console.log('snapshot called')
 	const {
 		mirror = new Mirror(),
 		blockClass = 'rr-block',

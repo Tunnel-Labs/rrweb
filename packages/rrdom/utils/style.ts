@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 export function parseCSSText(cssText: string): Record<string, string> {
 	const res: Record<string, string> = {};
 	const listDelimiter = /;(?![^(]*\))/g;

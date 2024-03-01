@@ -1,5 +1,7 @@
+// @ts-nocheck
+
 import { NodeType as RRNodeType } from 'rrweb-snapshot';
-import { camelize, parseCSSText, toCSSText } from './style';
+import { camelize, parseCSSText, toCSSText } from './style.js';
 export interface IRRNode {
 	parentElement: IRRNode | null;
 	parentNode: IRRNode | null;

@@ -1,5 +1,5 @@
 {
-	"name": "@-rrweb/rrweb-snapshot",
+	"name": "@-/rrweb-snapshot",
 	"version": "2.0.0-alpha.11",
 	"description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
 	"type": "module",
@@ -21,7 +21,7 @@
 		"build": "unbuild"
 	},
 	"devDependencies": {
-		"@-rrweb/css-parse": "workspace:*",
+		"@-/css-parse": "workspace:*",
 		"thumbhash": "^0.1.1",
 		"unbuild": "^2.0.0"
 	}

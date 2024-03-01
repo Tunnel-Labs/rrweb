@@ -1,5 +1,5 @@
 {
-	"name": "@-rrweb/rrweb-player",
+	"name": "@-/rrweb-player",
 	"version": "2.0.0-alpha.11",
 	"devDependencies": {
 		"@rollup/plugin-commonjs": "^22.0.0",

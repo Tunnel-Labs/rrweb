@@ -1,5 +1,5 @@
 {
-	"name": "@-rrweb/rrdom-nodejs",
+	"name": "@-/rrdom-nodejs",
 	"version": "2.0.0-alpha.11",
 	"license": "MIT",
 	"main": "lib/rrdom-nodejs.cjs",

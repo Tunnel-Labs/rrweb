@@ -31,7 +31,7 @@ import {
 	IRRNode,
 	IRRText,
 	NodeType,
-} from '../utils/document';
+} from '../utils/document.js';
 
 export class RRDocument extends BaseRRDocumentImpl(RRNode) {
 	private UNSERIALIZED_STARTING_ID = -2;
@@ -487,5 +487,5 @@ function walk(node: IRRNode, mirror: IMirror<IRRNode>, blankSpace: string) {
 
 export { RRNode };
 
-export { createOrGetNode, diff, ReplayerHandler } from '../utils/diff';
-export * from '../utils/document';
+export { createOrGetNode, diff, type ReplayerHandler } from '../utils/diff.js';
+export * from '../utils/document.js';
