@@ -1,0 +1,13 @@
+{
+	"extends": "@tunnel/tsconfig",
+	"include": [
+		"./packages/rrdom",
+		"./packages/rrdom-nodejs",
+		"./packages/rrweb",
+		"./packages/rrweb-player",
+		"./packages/rrweb-snapshot",
+		"./packages/types",
+		"./packages/rrvideo",
+		"./packages/web-extension"
+	]
+}

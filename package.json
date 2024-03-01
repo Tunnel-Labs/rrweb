@@ -1,0 +1,16 @@
+{
+	"name": "@-rrweb/monorepo",
+	"description": "record and replay the web",
+	"private": true,
+	"scripts": {
+		"format": "dprint fmt"
+	},
+	"devDependencies": {
+		"@tunnel/tsconfig": "^0.0.0",
+		"@typescript-eslint/eslint-plugin": "^5.62.0",
+		"@typescript-eslint/parser": "^5.62.0",
+		"dprint": "^0.45.0",
+		"eslint": "^8.53.0",
+		"typescript": "^5.3.3"
+	}
+}

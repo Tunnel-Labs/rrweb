@@ -1,0 +1,28 @@
+{
+	"name": "@-rrweb/rrweb-snapshot",
+	"version": "2.0.0-alpha.11",
+	"description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
+	"type": "module",
+	"files": [".build"],
+	"main": "./.build/main.cjs",
+	"module": "./.build/main.mjs",
+	"types": "./.build/main.d.ts",
+	"exports": {
+		"import": {
+			"types": "./.build/main.d.mts",
+			"default": "./.build/main.mjs"
+		},
+		"require": {
+			"types": "./.build/main.d.cts",
+			"default": "./.build/main.cjs"
+		}
+	},
+	"scripts": {
+		"build": "unbuild"
+	},
+	"devDependencies": {
+		"@-rrweb/css-parse": "workspace:*",
+		"thumbhash": "^0.1.1",
+		"unbuild": "^2.0.0"
+	}
+}

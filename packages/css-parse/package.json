@@ -1,0 +1,5 @@
+{
+	"name": "@-rrweb/css-parse",
+	"type": "module",
+	"exports": "./exports/main.ts"
+}
