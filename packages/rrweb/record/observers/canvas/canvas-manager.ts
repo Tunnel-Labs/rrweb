@@ -10,7 +10,7 @@ import type {
 } from '@rrweb/types';
 import { CanvasContext } from '@rrweb/types';
 import type { DataURLOptions, ICanvas, Mirror } from 'rrweb-snapshot';
-import ImageBitmapDataURLWorker from 'web-worker:../../workers/image-bitmap-data-url-worker.js';
+import ImageBitmapDataURLWorker from 'web-worker:../../workers/image-bitmap-data-url-worker.ts';
 import { isBlocked } from '../../../utils/_.js';
 import type { ImageBitmapDataURLRequestWorker } from '../../workers/image-bitmap-data-url-worker.js';
 import initCanvas2DMutationObserver from './2d.js';

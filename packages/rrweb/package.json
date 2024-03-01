@@ -29,7 +29,8 @@
 	},
 	"devDependencies": {
 		"@rrweb/types": "workspace:@-/types@*",
-		"@types/css-font-loading-module": "0.0.7",
+		"@types/css-font-loading-module": "^0.0.13",
+		"rollup-plugin-web-worker-loader": "^1.6.1",
 		"rrdom": "workspace:@-/rrdom@*",
 		"rrweb-snapshot": "workspace:@-/rrweb-snapshot@*",
 		"unbuild": "^2.0.0"

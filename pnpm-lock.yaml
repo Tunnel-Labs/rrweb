@@ -153,13 +153,7 @@ importers:
         version: 27.1.5(@babel/core@7.24.0)(@types/jest@27.5.2)(jest@27.5.1)(typescript@4.9.5)
 
   packages/rrweb:
-    devDependencies:
-      '@rrweb/types':
-        specifier: workspace:@-/types@*
-        version: link:../types
-      '@types/css-font-loading-module':
-        specifier: 0.0.7
-        version: 0.0.7
+    dependencies:
       '@xstate/fsm':
         specifier: ^2.1.0
         version: 2.1.0
@@ -172,6 +166,16 @@ importers:
       mitt:
         specifier: ^3.0.0
         version: 3.0.1
+    devDependencies:
+      '@rrweb/types':
+        specifier: workspace:@-/types@*
+        version: link:../types
+      '@types/css-font-loading-module':
+        specifier: 0.0.7
+        version: 0.0.7
+      rollup-plugin-web-worker-loader:
+        specifier: ^1.6.1
+        version: 1.6.1(rollup@2.79.1)
       rrdom:
         specifier: workspace:@-/rrdom@*
         version: link:../rrdom
@@ -3454,7 +3458,7 @@ packages:
 
   /@xstate/fsm@2.1.0:
     resolution: {integrity: sha512-oJlc0iD0qZvAM7If/KlyJyqUt7wVI8ocpsnlWzAPl97evguPbd+oJbRM9R4A1vYJffYH96+Bx44nLDE6qS8jQg==}
-    dev: true
+    dev: false
 
   /@yarn-tool/resolve-package@1.0.47:
     resolution: {integrity: sha512-Zaw58gQxjQceJqhqybJi1oUDaORT8i2GTgwICPs8v/X/Pkx35FXQba69ldHVg5pQZ6YLKpROXgyHvBaCJOFXiA==}
@@ -3885,6 +3889,7 @@ packages:
   /base64-arraybuffer@1.0.2:
     resolution: {integrity: sha512-I3yl4r9QB5ZRY3XuJVEPfc2XhZO6YweFPI+UovAzn+8/hb3oJ6lnysaFcjVpkCPfVWFUDvoZ8kmVDP7WyRtYtQ==}
     engines: {node: '>= 0.6.0'}
+    dev: false
 
   /base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
@@ -5737,6 +5742,7 @@ packages:
 
   /fflate@0.4.8:
     resolution: {integrity: sha512-FJqqoDBR00Mdj9ppamLa/Y7vxm+PRmNWA67N846RvsoYVMKB4q3y/de5PA7gUmRMYK/8CMz2GDZQmCRN1wBcWA==}
+    dev: false
 
   /file-entry-cache@6.0.1:
     resolution: {integrity: sha512-7Gps/XWymbLk2QLYK4NzpMOrYjMhdIxXuIvy2QBsLE6ljuodKvdkWs/cpyJJ3CVIVpH0Oi1Hvg1ovbMzLdFBBg==}
@@ -7834,6 +7840,7 @@ packages:
 
   /mitt@3.0.1:
     resolution: {integrity: sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==}
+    dev: false
 
   /mkdirp-classic@0.5.3:
     resolution: {integrity: sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A==}
